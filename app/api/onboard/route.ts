@@ -6,48 +6,50 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const {
-            email,
-            jobTitle,
-            industry,
-            topics,
-            deliveryTime,
-            deliveryFreq,
-            deliveryMethod,
-        } = body;
+        const { user: userInfo, subscriptions } = body;
 
-        // Basic validation
-        if (!email || !jobTitle || !industry || !topics || !deliveryTime || !deliveryFreq || !deliveryMethod) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        if (!userInfo?.email || !subscriptions || !Array.isArray(subscriptions)) {
+            return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
         }
 
         // Create or update user
         const user = await prisma.user.upsert({
-            where: { email },
+            where: { email: userInfo.email },
             update: {
-                jobTitle,
-                industry,
-                deliveryTime,
-                deliveryFreq,
-                deliveryMethod,
-                topics: {
-                    deleteMany: {}, // Remove old topics
-                    create: topics.split(',').map((t: string) => ({ name: t.trim() })),
+                jobTitle: userInfo.jobTitle,
+                industry: userInfo.industry,
+                // Delete old subscriptions to replace with new ones (simplest sync strategy)
+                subscriptions: {
+                    deleteMany: {},
+                    create: subscriptions.map((sub: any) => ({
+                        deliveryFreq: sub.deliveryFreq,
+                        deliveryTime: sub.deliveryTime,
+                        deliveryDay: sub.deliveryDay ? parseInt(sub.deliveryDay) : null,
+                        deliveryMethod: sub.deliveryMethod,
+                        topics: {
+                            create: sub.topics.split(',').map((t: string) => ({ name: t.trim() })),
+                        },
+                    })),
                 },
             },
             create: {
-                email,
-                jobTitle,
-                industry,
-                deliveryTime,
-                deliveryFreq,
-                deliveryMethod,
-                topics: {
-                    create: topics.split(',').map((t: string) => ({ name: t.trim() })),
+                email: userInfo.email,
+                jobTitle: userInfo.jobTitle,
+                industry: userInfo.industry,
+                subscriptions: {
+                    create: subscriptions.map((sub: any) => ({
+                        deliveryFreq: sub.deliveryFreq,
+                        deliveryTime: sub.deliveryTime,
+                        deliveryDay: sub.deliveryDay ? parseInt(sub.deliveryDay) : null,
+                        deliveryMethod: sub.deliveryMethod,
+                        topics: {
+                            create: sub.topics.split(',').map((t: string) => ({ name: t.trim() })),
+                        },
+                    })),
                 },
             },
             include: {
-                topics: true,
+                subscriptions: true,
             },
         });
 
