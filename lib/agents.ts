@@ -9,13 +9,13 @@ interface SearchResult {
     snippet: string;
 }
 
-export async function searchNews(topic: string, fromDate?: Date): Promise<SearchResult[]> {
+export async function searchNews(topic: string, fromDate?: Date): Promise<{ results: SearchResult[], error?: string }> {
     const apiKey = process.env.GOOGLE_API_KEY;
     const cx = process.env.GOOGLE_SEARCH_CX;
 
     if (!apiKey || !cx) {
         console.error('Missing Google Search API keys');
-        return [];
+        return { results: [], error: 'Missing Google Search API keys (GOOGLE_API_KEY or GOOGLE_SEARCH_CX)' };
     }
 
     try {
@@ -33,23 +33,27 @@ export async function searchNews(topic: string, fromDate?: Date): Promise<Search
         const response = await fetch(url);
         const data = await response.json();
         console.log(`[Search] Response status: ${response.status}`);
+
         if (data.error) {
             console.error('[Search] API Error:', JSON.stringify(data.error, null, 2));
+            return { results: [], error: `Google API Error: ${data.error.message} (Code: ${data.error.code})` };
         }
 
         if (!data.items) {
             console.log('[Search] No items found in response.');
-            return [];
+            return { results: [], error: 'No items found in Google Search response' };
         }
 
-        return data.items.map((item: any) => ({
+        const results = data.items.map((item: any) => ({
             title: item.title,
             link: item.link,
             snippet: item.snippet,
         }));
+
+        return { results };
     } catch (error) {
         console.error('Error searching news:', error);
-        return [];
+        return { results: [], error: `Exception during search: ${String(error)}` };
     }
 }
 
