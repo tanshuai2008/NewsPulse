@@ -21,9 +21,21 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Create user and topics
-        const user = await prisma.user.create({
-            data: {
+        // Create or update user
+        const user = await prisma.user.upsert({
+            where: { email },
+            update: {
+                jobTitle,
+                industry,
+                deliveryTime,
+                deliveryFreq,
+                deliveryMethod,
+                topics: {
+                    deleteMany: {}, // Remove old topics
+                    create: topics.split(',').map((t: string) => ({ name: t.trim() })),
+                },
+            },
+            create: {
                 email,
                 jobTitle,
                 industry,
