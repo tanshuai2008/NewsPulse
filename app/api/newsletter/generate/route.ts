@@ -54,7 +54,12 @@ async function generateForSubscription(subscriptionId: string, force: boolean = 
     for (const topic of subscription.topics) {
         logs.push(`Searching for topic: ${topic.name}`);
         try {
-            const results = await searchNews(topic.name, searchFromDate);
+            const { results, error } = await searchNews(topic.name, searchFromDate);
+
+            if (error) {
+                logs.push(`Search Error for ${topic.name}: ${error}`);
+            }
+
             logs.push(`Found ${results.length} results for ${topic.name}`);
 
             for (const result of results) {
