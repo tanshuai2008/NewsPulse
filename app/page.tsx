@@ -177,10 +177,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex justify-center mt-8">
+        <div className="flex flex-col items-center mt-8 space-y-4">
           <button onClick={handleSubmit} disabled={loading} className="btn-primary w-full md:w-auto px-12">
             {loading ? 'Saving...' : 'Save Preferences'}
           </button>
+          <a href="/newsletters" className="text-sm text-blue-400 hover:text-blue-300">
+            View Newsletter Archive →
+          </a>
         </div>
       </div>
     </main>
