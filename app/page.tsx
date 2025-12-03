@@ -79,6 +79,9 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="glass-card p-8 max-w-4xl w-full fade-in">
+        <div className="flex justify-center mb-6">
+          <img src="/logo.jpg" alt="NewsPulse Logo" className="h-24 w-auto rounded-lg shadow-lg" />
+        </div>
         <h1 className="text-4xl font-bold mb-2 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
           NewsPulse
         </h1>
