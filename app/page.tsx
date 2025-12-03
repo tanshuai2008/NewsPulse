@@ -58,13 +58,21 @@ export default function Home() {
         const data = await res.json();
         // Trigger generation for the first subscription as demo
         if (data.user.subscriptions.length > 0) {
-          await fetch('/api/newsletter/generate', {
+          const genRes = await fetch('/api/newsletter/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ subscriptionId: data.user.subscriptions[0].id, force: true }),
           });
+          const genData = await genRes.json();
+          console.log('Generation Logs:', genData.logs);
+          if (genData.logs) {
+            alert(`Setup complete!\n\nGeneration Status:\n${genData.logs.join('\n')}`);
+          } else {
+            alert('Setup complete! Check your email.');
+          }
+        } else {
+          alert('Setup complete! No subscriptions added.');
         }
-        alert('Setup complete! Check your email.');
       } else {
         alert('Something went wrong.');
       }
