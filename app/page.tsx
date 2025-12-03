@@ -61,7 +61,7 @@ export default function Home() {
           await fetch('/api/newsletter/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subscriptionId: data.user.subscriptions[0].id }),
+            body: JSON.stringify({ subscriptionId: data.user.subscriptions[0].id, force: true }),
           });
         }
         alert('Setup complete! Check your email.');
