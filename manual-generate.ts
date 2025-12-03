@@ -8,22 +8,27 @@ async function main() {
     try {
         const user = await prisma.user.findUnique({
             where: { email: userEmail },
-            include: { topics: true },
+            include: {
+                subscriptions: {
+                    include: { topics: true }
+                }
+            },
         });
 
-        if (!user) {
-            console.error('User not found');
+        if (!user || user.subscriptions.length === 0) {
+            console.error('User or subscription not found');
             return;
         }
 
-        console.log(`Generating newsletter for ${user.email}...`);
-        console.log(`Topics: ${user.topics.map(t => t.name).join(', ')}`);
+        const subscription = user.subscriptions[0];
+        console.log(`Generating newsletter for ${user.email} (Sub ID: ${subscription.id})...`);
+        console.log(`Topics: ${subscription.topics.map(t => t.name).join(', ')}`);
 
         let allArticles: { title: string; link: string; text: string }[] = [];
 
         const lastSentDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-        for (const topic of user.topics) {
+        for (const topic of subscription.topics) {
             console.log(`Searching for: ${topic.name}`);
             const results = await searchNews(topic.name, lastSentDate);
             console.log(`Found ${results.length} results.`);
@@ -56,7 +61,7 @@ async function main() {
         const newsletter = await prisma.newsletter.create({
             data: {
                 content: newsletterContent,
-                userId: user.id,
+                subscriptionId: subscription.id,
             },
         });
 
