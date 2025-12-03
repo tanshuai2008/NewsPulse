@@ -72,7 +72,7 @@ export async function fetchContent(url: string): Promise<string> {
 
         // Get text from paragraphs
         const text = $('p').map((i, el) => $(el).text()).get().join('\n\n');
-        return text.slice(0, 10000); // Limit context window
+        return text.slice(0, 4000); // Limit context window (reduced for performance)
     } catch (error) {
         console.error(`Error fetching content from ${url}:`, error);
         return '';
