@@ -5,7 +5,7 @@ import { sendEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
-async function generateForSubscription(subscriptionId: string) {
+async function generateForSubscription(subscriptionId: string, force: boolean = false) {
     const subscription = await prisma.subscription.findUnique({
         where: { id: subscriptionId },
         include: {
@@ -25,20 +25,22 @@ async function generateForSubscription(subscriptionId: string) {
     const now = new Date();
     const diffDays = (now.getTime() - lastSentDate.getTime()) / (1000 * 60 * 60 * 24);
 
-    // Frequency Check
-    if (subscription.deliveryFreq === 'Weekly') {
-        // Check if enough time passed AND it's the right day
-        if (diffDays < 6) { // Allow some buffer
-            console.log(`Skipping ${subscription.user.email} (Sub ${subscription.id}): Weekly freq, not due yet.`);
+    // Frequency Check (Skip if force is true)
+    if (!force) {
+        if (subscription.deliveryFreq === 'Weekly') {
+            // Check if enough time passed AND it's the right day
+            if (diffDays < 6) { // Allow some buffer
+                console.log(`Skipping ${subscription.user.email} (Sub ${subscription.id}): Weekly freq, not due yet.`);
+                return null;
+            }
+            if (subscription.deliveryDay !== null && now.getDay() !== subscription.deliveryDay) {
+                console.log(`Skipping ${subscription.user.email} (Sub ${subscription.id}): Wrong day of week (Today: ${now.getDay()}, Target: ${subscription.deliveryDay})`);
+                return null;
+            }
+        } else if (subscription.deliveryFreq === 'Daily' && diffDays < 0.9) {
+            console.log(`Skipping ${subscription.user.email} (Sub ${subscription.id}): Daily freq, already sent today.`);
             return null;
         }
-        if (subscription.deliveryDay !== null && now.getDay() !== subscription.deliveryDay) {
-            console.log(`Skipping ${subscription.user.email} (Sub ${subscription.id}): Wrong day of week (Today: ${now.getDay()}, Target: ${subscription.deliveryDay})`);
-            return null;
-        }
-    } else if (subscription.deliveryFreq === 'Daily' && diffDays < 0.9) {
-        console.log(`Skipping ${subscription.user.email} (Sub ${subscription.id}): Daily freq, already sent today.`);
-        return null;
     }
 
     const searchFromDate = lastNewsletter ? lastNewsletter.sentAt : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
