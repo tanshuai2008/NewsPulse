@@ -30,7 +30,8 @@ async function main() {
 
         for (const topic of subscription.topics) {
             console.log(`Searching for: ${topic.name}`);
-            const results = await searchNews(topic.name, lastSentDate);
+            const { results, error } = await searchNews(topic.name, lastSentDate);
+            if (error) console.error(`Search Error: ${error}`);
             console.log(`Found ${results.length} results.`);
 
             for (const result of results) {

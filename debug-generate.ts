@@ -28,7 +28,8 @@ async function main() {
         for (const topic of subscription.topics) {
             console.log(`\nSearching for topic: "${topic.name}"...`);
             try {
-                const results = await searchNews(topic.name, searchFromDate);
+                const { results, error } = await searchNews(topic.name, searchFromDate);
+                if (error) console.error(`> Search Error: ${error}`);
                 console.log(`> Found ${results.length} results.`);
 
                 if (results.length > 0) {
