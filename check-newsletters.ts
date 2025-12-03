@@ -3,7 +3,11 @@ import { prisma } from './lib/prisma';
 async function main() {
     try {
         const newsletters = await prisma.newsletter.findMany({
-            include: { user: true },
+            include: {
+                subscription: {
+                    include: { user: true }
+                }
+            },
             orderBy: { sentAt: 'desc' },
             take: 5
         });
@@ -11,7 +15,7 @@ async function main() {
         console.log(`Found ${newsletters.length} newsletters.`);
         newsletters.forEach(n => {
             console.log(`- ID: ${n.id}`);
-            console.log(`  To: ${n.user.email}`);
+            console.log(`  To: ${n.subscription.user.email}`);
             console.log(`  Sent At: ${n.sentAt}`);
             console.log(`  Content Length: ${n.content.length}`);
             console.log('---');
