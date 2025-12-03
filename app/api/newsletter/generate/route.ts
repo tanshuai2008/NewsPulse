@@ -4,7 +4,7 @@ import { searchNews, fetchContent, summarizeContent } from '@/lib/agents';
 import { sendEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60; // Attempt to increase timeout to 60s
+export const maxDuration = 60;
 
 async function generateForSubscription(subscriptionId: string, force: boolean = false) {
     const logs: string[] = [];
@@ -65,17 +65,28 @@ async function generateForSubscription(subscriptionId: string, force: boolean = 
 
             for (const result of results) {
                 logs.push(`Fetching: ${result.link}`);
-                const text = await fetchContent(result.link);
-                if (text.length > 500) {
-                    allArticles.push({ title: result.title, link: result.link, text });
-                    logs.push(`Fetched ${text.length} chars (Success)`);
-                } else {
-                    logs.push(`Fetched ${text.length} chars (Skipped - too short)`);
+                // Add a timeout to fetchContent to prevent hanging
+                const fetchPromise = fetchContent(result.link);
+                const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Fetch timeout')), 5000));
+
+                try {
+                    const text = await Promise.race([fetchPromise, timeoutPromise]) as string;
+                    if (text.length > 500) {
+                        allArticles.push({ title: result.title, link: result.link, text: text.slice(0, 2000) }); // Hard limit 2k chars
+                        logs.push(`Fetched ${text.length} chars (Success)`);
+                    } else {
+                        logs.push(`Fetched ${text.length} chars (Skipped - too short)`);
+                    }
+                } catch (err) {
+                    logs.push(`Error fetching ${result.link}: ${err}`);
                 }
+
+                if (allArticles.length >= 1) break; // STOP after 1 article for debugging
             }
         } catch (e) {
             logs.push(`Error searching topic ${topic.name}: ${e}`);
         }
+        if (allArticles.length >= 1) break; // STOP after 1 topic/article
     }
 
     if (allArticles.length === 0) {
@@ -84,7 +95,7 @@ async function generateForSubscription(subscriptionId: string, force: boolean = 
     }
 
     logs.push(`Summarizing ${allArticles.length} articles...`);
-    const topArticles = allArticles.slice(0, 3); // Reduced to 3 for performance
+    const topArticles = allArticles.slice(0, 1); // Limit to 1 article
     const newsletterContent = await summarizeContent(topArticles);
     logs.push('Summary generated.');
 
