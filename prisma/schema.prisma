@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL") // Uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Uses direct connection
+}
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  jobTitle        String
+  industry        String
+  deliveryTime    String       // e.g., "08:00"
+  deliveryFreq    String       // e.g., "Weekly"
+  deliveryMethod  String       // e.g., "Email Text"
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  topics          Topic[]
+  newsletters     Newsletter[]
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Newsletter {
+  id        String     @id @default(cuid())
+  content   String     // HTML content with citations
+  sentAt    DateTime   @default(now())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback  Feedback?
+}
+
+model Feedback {
+  id           String     @id @default(cuid())
+  rating       Int        // 1-5
+  comment      String?
+  newsletterId String     @unique
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+}
