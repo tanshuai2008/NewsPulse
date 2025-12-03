@@ -4,6 +4,7 @@ import { searchNews, fetchContent, summarizeContent } from '@/lib/agents';
 import { sendEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Attempt to increase timeout to 60s
 
 async function generateForSubscription(subscriptionId: string, force: boolean = false) {
     const logs: string[] = [];
@@ -83,7 +84,7 @@ async function generateForSubscription(subscriptionId: string, force: boolean = 
     }
 
     logs.push(`Summarizing ${allArticles.length} articles...`);
-    const topArticles = allArticles.slice(0, 5);
+    const topArticles = allArticles.slice(0, 3); // Reduced to 3 for performance
     const newsletterContent = await summarizeContent(topArticles);
     logs.push('Summary generated.');
 
