@@ -9,38 +9,48 @@ datasource db {
 }
 
 model User {
-  id              String       @id @default(cuid())
-  email           String       @unique
+  id              String         @id @default(cuid())
+  email           String         @unique
   jobTitle        String
   industry        String
-  deliveryTime    String       // e.g., "08:00"
-  deliveryFreq    String       // e.g., "Weekly"
-  deliveryMethod  String       // e.g., "Email Text"
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  topics          Topic[]
-  newsletters     Newsletter[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  subscriptions   Subscription[]
+}
+
+model Subscription {
+  id             String       @id @default(cuid())
+  deliveryTime   String       // e.g., "08:00"
+  deliveryFreq   String       // e.g., "Daily", "Weekly"
+  deliveryDay    Int?         // 0-6 (Sunday-Saturday), null for Daily
+  deliveryMethod String       // e.g., "Email Text"
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topics         Topic[]
+  newsletters    Newsletter[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Topic {
-  id        String   @id @default(cuid())
-  name      String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  name           String
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
 
 model Newsletter {
-  id        String     @id @default(cuid())
-  content   String     // HTML content with citations
-  sentAt    DateTime   @default(now())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  feedback  Feedback?
+  id             String       @id @default(cuid())
+  content        String
+  sentAt         DateTime     @default(now())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  feedback       Feedback?
 }
 
 model Feedback {
   id           String     @id @default(cuid())
-  rating       Int        // 1-5
+  rating       Int
   comment      String?
   newsletterId String     @unique
   newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
