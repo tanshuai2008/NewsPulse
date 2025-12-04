@@ -80,7 +80,8 @@ export async function fetchContent(url: string): Promise<string> {
 }
 
 export async function summarizeContent(contents: { title: string; link: string; text: string }[]): Promise<string> {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.0-pro'];
+    let lastError = '';
 
     let prompt = `You are a professional newsletter editor. Summarize the following news articles into a cohesive newsletter.
   
@@ -98,12 +99,19 @@ export async function summarizeContent(contents: { title: string; link: string; 
         prompt += `\n\n[${index + 1}] Title: ${article.title}\nLink: ${article.link}\nContent: ${article.text}\n`;
     });
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return response.text();
-    } catch (error) {
-        console.error('Error generating summary:', error);
-        return `Failed to generate newsletter. Error details: ${String(error)}`;
+    for (const modelName of modelsToTry) {
+        try {
+            console.log(`[Summarize] Trying model: ${modelName}`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
+        } catch (error) {
+            console.error(`[Summarize] Failed with ${modelName}:`, error);
+            lastError = String(error);
+            // Continue to next model
+        }
     }
+
+    return `Failed to generate newsletter. All models failed. Last error: ${lastError}`;
 }
