@@ -19,7 +19,7 @@ export default async function NewsletterDetailPage({ params }: { params: Promise
     });
 
     if (!newsletter) {
-        console.log(`[NewsletterDetail] Newsletter not found: ${params.id}`);
+        console.log(`[NewsletterDetail] Newsletter not found: ${id}`);
         notFound();
     }
 
