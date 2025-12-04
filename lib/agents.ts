@@ -104,6 +104,6 @@ export async function summarizeContent(contents: { title: string; link: string; 
         return response.text();
     } catch (error) {
         console.error('Error generating summary:', error);
-        return 'Failed to generate newsletter.';
+        return `Failed to generate newsletter. Error details: ${String(error)}`;
     }
 }
