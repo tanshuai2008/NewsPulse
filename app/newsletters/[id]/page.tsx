@@ -22,6 +22,9 @@ export default async function NewsletterDetailPage({ params }: { params: { id: s
         notFound();
     }
 
+    const userEmail = newsletter.subscription?.user?.email || 'Unknown User';
+    const sentDate = newsletter.sentAt ? new Date(newsletter.sentAt).toISOString().split('T')[0] : 'Unknown Date';
+
     return (
         <main className="min-h-screen p-8 bg-white text-slate-900">
             <div className="max-w-3xl mx-auto">
@@ -31,7 +34,7 @@ export default async function NewsletterDetailPage({ params }: { params: { id: s
                             ← Back to Archive
                         </Link>
                         <p className="text-sm text-slate-500">
-                            Sent to: {newsletter.subscription.user.email} on {newsletter.sentAt.toISOString().split('T')[0]}
+                            Sent to: {userEmail} on {sentDate}
                         </p>
                     </div>
                 </div>
