@@ -80,7 +80,7 @@ export async function fetchContent(url: string): Promise<string> {
 }
 
 export async function summarizeContent(contents: { title: string; link: string; text: string }[]): Promise<string> {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     let prompt = `You are a professional newsletter editor. Summarize the following news articles into a cohesive newsletter.
   
