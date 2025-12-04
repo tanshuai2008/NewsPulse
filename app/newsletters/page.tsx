@@ -39,7 +39,7 @@ export default async function NewsletterListPage() {
                                         Frequency: {newsletter.subscription.deliveryFreq}
                                     </p>
                                     <p className="text-slate-400 text-sm">
-                                        Sent: {new Date(newsletter.sentAt).toLocaleString()}
+                                        Sent: {new Date(newsletter.sentAt).toISOString().split('T')[0]}
                                     </p>
                                 </div>
                                 <Link

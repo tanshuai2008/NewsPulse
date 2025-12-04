@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function NewsletterDetailPage({ params }: { params: { id: string } }) {
+    console.log(`[NewsletterDetail] Rendering for ID: ${params.id}`);
     const newsletter = await prisma.newsletter.findUnique({
         where: { id: params.id },
         include: {
@@ -17,6 +18,7 @@ export default async function NewsletterDetailPage({ params }: { params: { id: s
     });
 
     if (!newsletter) {
+        console.log(`[NewsletterDetail] Newsletter not found: ${params.id}`);
         notFound();
     }
 
@@ -29,7 +31,7 @@ export default async function NewsletterDetailPage({ params }: { params: { id: s
                             ← Back to Archive
                         </Link>
                         <p className="text-sm text-slate-500">
-                            Sent to: {newsletter.subscription.user.email} on {new Date(newsletter.sentAt).toLocaleString()}
+                            Sent to: {newsletter.subscription.user.email} on {newsletter.sentAt.toISOString().split('T')[0]}
                         </p>
                     </div>
                 </div>
