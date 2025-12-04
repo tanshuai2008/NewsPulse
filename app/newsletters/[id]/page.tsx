@@ -4,10 +4,11 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewsletterDetailPage({ params }: { params: { id: string } }) {
-    console.log(`[NewsletterDetail] Rendering for ID: ${params.id}`);
+export default async function NewsletterDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    console.log(`[NewsletterDetail] Rendering for ID: ${id}`);
     const newsletter = await prisma.newsletter.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
             subscription: {
                 include: {
