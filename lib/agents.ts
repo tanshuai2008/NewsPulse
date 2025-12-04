@@ -80,7 +80,7 @@ export async function fetchContent(url: string): Promise<string> {
 }
 
 export async function summarizeContent(contents: { title: string; link: string; text: string }[]): Promise<string> {
-    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.0-pro'];
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
     let lastError = '';
 
     let prompt = `You are a professional newsletter editor. Summarize the following news articles into a cohesive newsletter.
